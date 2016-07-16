@@ -2,13 +2,13 @@
     "author": "Pebble",
     "dependencies": {},
     "keywords": [],
-    "name": "tutorial-2-2",
+    "name": "batteries",
     "pebble": {
         "capabilities": [
             ""
         ],
-        "displayName": "Tutorial-2-2",
-        "enableMultiJS": false,
+        "displayName": "Batteries Monitor",
+        "enableMultiJS": true,
         "messageKeys": {
             "phone_battery": 0
         },
