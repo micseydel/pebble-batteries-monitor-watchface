@@ -24,7 +24,7 @@ static TextLayer *s_watch_battery_layer;
 static TextLayer *s_phone_battery_layer;
 
 static int s_watch_battery_level;
-static int32_t s_phone_battery_level;
+static int32_t s_phone_battery_level = 0;
 
 static BitmapLayer *s_background_layer;
 static GBitmap *s_background_bitmap;
@@ -189,12 +189,44 @@ static void inbox_received_callback(DictionaryIterator *iter, void *context) {
   // A new message has been successfully received
   Tuple *battery_tuple = dict_find(iter, MESSAGE_KEY_phone_battery);
   if (battery_tuple) {
+    bool do_update = s_phone_battery_level == 0;
+
     s_phone_battery_level = battery_tuple->value->int32;
+    
+    if (do_update) {
+      update_phone_battery_layer();
+    }
   }
 }
 
 //TODO: inbox dropped https://developer.pebble.com/guides/communication/sending-and-receiving-data/
 
+static void request_from_phone() {
+  // Declare the dictionary's iterator
+  DictionaryIterator *out_iter;
+
+  // Prepare the outbox buffer for this message
+  AppMessageResult result = app_message_outbox_begin(&out_iter);
+
+  if(result == APP_MSG_OK) {
+    // A dummy value
+    int value = 0;
+  
+    // Add an item to ask for weather data
+    dict_write_int(out_iter, MESSAGE_KEY_phone_battery, &value, sizeof(int), true);
+  } else {
+    // The outbox cannot be used right now
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Error preparing the outbox: %d", (int)result);
+  }
+
+  // Send this message
+  result = app_message_outbox_send();
+  
+  // Check the result
+  if(result != APP_MSG_OK) {
+    APP_LOG(APP_LOG_LEVEL_ERROR, "Error sending the outbox: %d", (int)result);
+  }
+}
 
 static void init() {
   // Register for battery level updates
@@ -229,7 +261,7 @@ static void init() {
   // Register to be notified about inbox received events
   app_message_register_inbox_received(inbox_received_callback);
   
-  
+  request_from_phone();
 }
 
 static void deinit() {
