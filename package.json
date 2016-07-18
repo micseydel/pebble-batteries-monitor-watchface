@@ -26,17 +26,6 @@
                     "name": "BACKGROUND_IMAGE",
                     "targetPlatforms": null,
                     "type": "bitmap"
-                },
-                {
-                    "file": "images/background.png",
-                    "name": "IMAGE_BACKGROUND",
-                    "type": "bitmap"
-                },
-                {
-                    "compatibility": "2.7",
-                    "file": "fonts/perfect-dos-vga.ttf",
-                    "name": "FONT_PERFECT_DOS_48",
-                    "type": "font"
                 }
             ]
         },
