@@ -16,6 +16,12 @@
         "resources": {
             "media": [
                 {
+                    "file": "images/bt-icon",
+                    "name": "BLUETOOTH_DISABLED",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
                     "file": "images/pebble_batteries_watchface.bmp",
                     "name": "BACKGROUND_IMAGE",
                     "targetPlatforms": null,

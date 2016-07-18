@@ -2,10 +2,10 @@
 
 TODO
 
-Phone battery indicator (requires companion app)
 Charging indicators
 Colors
 Bluetooth indicator - https://developer.pebble.com/tutorials/intermediate/add-bluetooth/
+Configurable intervals - https://developer.pebble.com/tutorials/intermediate/slate/
 Detect staleness
 
 */
@@ -14,7 +14,7 @@ Detect staleness
 
 // Largest expected inbox and outbox message sizes
 const uint32_t inbox_size = 64;
-const uint32_t outbox_size = 0;//256;
+const uint32_t outbox_size = sizeof(int);
 
 
 static Window *s_main_window;
@@ -26,8 +26,8 @@ static TextLayer *s_phone_battery_layer;
 static int s_watch_battery_level;
 static int32_t s_phone_battery_level = 0;
 
-static BitmapLayer *s_background_layer;
-static GBitmap *s_background_bitmap;
+static BitmapLayer *s_background_layer, *s_bt_icon_layer;
+static GBitmap *s_background_bitmap, *s_bt_icon_bitmap;
 
 static GFont s_time_font;
 
@@ -104,6 +104,20 @@ static void tick_handler(struct tm *tick_time, TimeUnits units_changed) {
   update_phone_battery_layer();
 }
 
+static void bluetooth_callback(bool connected) {
+  // Show icon if disconnected
+  layer_set_hidden(bitmap_layer_get_layer(s_bt_icon_layer), connected);
+  layer_set_hidden(text_layer_get_layer(s_phone_battery_layer), !connected);
+  if (connected) {
+    s_phone_battery_level = 0;
+  }
+
+  if(!connected) {
+    // Issue a vibrating alert
+    vibes_double_pulse();
+  }
+}
+
 static void main_window_load(Window *window) {
   // Get information about the Window
   Layer *window_layer = window_get_root_layer(window);
@@ -159,12 +173,23 @@ static void main_window_load(Window *window) {
   text_layer_set_font(s_date_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24_BOLD));
   text_layer_set_font(s_watch_battery_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
   text_layer_set_font(s_phone_battery_layer, fonts_get_system_font(FONT_KEY_GOTHIC_14_BOLD));
+  
+  // Create the Bluetooth icon GBitmap
+  s_bt_icon_bitmap = gbitmap_create_with_resource(RESOURCE_ID_BLUETOOTH_DISABLED);
+  
+  // Create the BitmapLayer to display the GBitmap
+  s_bt_icon_layer = bitmap_layer_create(GRect(95, 70, 30, 30));
+  bitmap_layer_set_bitmap(s_bt_icon_layer, s_bt_icon_bitmap);
+  layer_add_child(window_get_root_layer(window), bitmap_layer_get_layer(s_bt_icon_layer));
 
   // Add it as a child layer to the Window's root layer
   layer_add_child(window_layer, text_layer_get_layer(s_time_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_date_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_watch_battery_layer));
   layer_add_child(window_layer, text_layer_get_layer(s_phone_battery_layer));
+  
+  // Show the correct state of the BT connection from the start
+  bluetooth_callback(connection_service_peek_pebble_app_connection());
 }
 
 static void main_window_unload(Window *window) {
@@ -180,8 +205,10 @@ static void main_window_unload(Window *window) {
   // Destroy GBitmap
   gbitmap_destroy(s_background_bitmap);
 
-  // Destroy BitmapLayer
+  // Destroy BitmapLayers
   bitmap_layer_destroy(s_background_layer);
+  gbitmap_destroy(s_bt_icon_bitmap);
+  bitmap_layer_destroy(s_bt_icon_layer);
 }
 
 
@@ -262,6 +289,11 @@ static void init() {
   app_message_register_inbox_received(inbox_received_callback);
   
   request_from_phone();
+
+  // Register for Bluetooth connection updates
+  connection_service_subscribe((ConnectionHandlers) {
+    .pebble_app_connection_handler = bluetooth_callback
+  });
 }
 
 static void deinit() {
