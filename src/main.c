@@ -221,7 +221,7 @@ static void init() {
   // Register with TickTimerService
   tick_timer_service_subscribe(MINUTE_UNIT, tick_handler);
   
-  
+  battery_callback(battery_state_service_peek());
   
   // Open AppMessage
   app_message_open(inbox_size, outbox_size);
