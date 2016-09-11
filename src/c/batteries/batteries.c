@@ -1,5 +1,5 @@
 #include <pebble.h>
-#include "batteries/batteries.h"
+#include "src/c/batteries/batteries.h"
 
 static TextLayer *s_watch_battery_layer;
 static TextLayer *s_phone_battery_layer;

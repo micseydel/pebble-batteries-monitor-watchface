@@ -4,9 +4,6 @@
     "keywords": [],
     "name": "batteries",
     "pebble": {
-        "capabilities": [
-            ""
-        ],
         "displayName": "Batteries Monitor",
         "enableMultiJS": true,
         "messageKeys": {

@@ -1,14 +1,14 @@
 #include <pebble.h>
-#include "date_time/date_time.h"
+#include "src/c/date_time/date_time.h"
 
 static TextLayer *s_time_layer;
 static TextLayer *s_date_layer;
 
 void load_date_time(Window *window, Layer *window_layer, GRect bounds) {
   s_time_layer = text_layer_create(
-    GRect(0, 126, bounds.size.w, 50));
+    GRect(0, 0, bounds.size.w, 50));
   s_date_layer = text_layer_create(
-      GRect(0, 0, bounds.size.w, 50));
+      GRect(0, 126, bounds.size.w, 50));
   
   text_layer_set_background_color(s_time_layer, GColorClear);
   text_layer_set_background_color(s_date_layer, GColorClear);
@@ -38,7 +38,7 @@ void update_date() {
   struct tm *tick_time = localtime(&temp);
 
   // Write the current hours and minutes into a buffer
-  static char s_buffer[12];
+  static char s_buffer[13];
   strftime(s_buffer, sizeof(s_buffer), "%d %B", tick_time);
 
   // Display this time on the TextLayer
